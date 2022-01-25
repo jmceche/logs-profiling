@@ -3,6 +3,7 @@ import express from 'express';
 import handlebars from "express-handlebars";
 import axios from 'axios';
 import yargs from 'yargs';
+import compression from "compression";
 
 import { Server as HttpServer } from 'http';
 import { Server as IOServer } from 'socket.io';
@@ -23,6 +24,7 @@ import mongoContainer from './mongoContainer.js';
 import { useMiddlewares } from './middlewares/useMiddlewares.js';
 import cluster from 'cluster';
 import { cpus } from "os"
+import logger from './helpers/pino.js';
 
 const numCPUs = cpus().length
 const args = yargs(process.argv.slice(2)).argv;
@@ -44,6 +46,7 @@ app.set("view engine", "hbs")
 app.set("views", "./views")
 
 
+app.use(compression())
 useMiddlewares(app)
 // routes
 app.use("/api/productos", router);
@@ -52,6 +55,7 @@ app.use("/api/randoms", randomRouter)
 app.use("/", authRoute)
 
 app.get("/", async (req, res) => {
+  logger.info("GET /")
   try {
     const products = await axios.get(`http://localhost:${port}/api/productos`);
     console.log(req.user)
@@ -62,6 +66,7 @@ app.get("/", async (req, res) => {
 })
 
 app.get("/info", (req, res) => {
+  logger.info("GET /info")
   const data = {
     argv: process.argv,
     os: process.platform,
@@ -74,14 +79,19 @@ app.get("/info", (req, res) => {
   }
   res.render("info", {data});
 });
+app.get("*", (req, res) => {
+  console.log(req.path);
+  logger.warn({route: req.path, method: 'GET'})
+  res.send("404")
+  });
 
 // sockets
 io.on('connection', async socket => {
-  io.sockets.emit('render_messages', await norm().catch(err => console.log(err)));
+  io.sockets.emit('render_messages', await norm().catch(err => logger.error(err)));
   socket.on('submit_product', data => {
     axios.post('http://localhost:3000/api/productos', data)
     .then(resp => console.log(resp.data))
-    .catch(err => console.error(err.response.data))
+    .catch(err => logger.error(err.response.data))
   });
   
   socket.on('send_message', async data => {

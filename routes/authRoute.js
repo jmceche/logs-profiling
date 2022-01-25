@@ -1,5 +1,6 @@
 import express from 'express';
 import bcrypt from "bcrypt";
+import logger from "../helpers/pino.js";
 
 import User from "../models/user.js"
 
@@ -89,6 +90,7 @@ function isValidPassword(user, password) {
 }
 
 router.get("/login", (req, res) => {
+  logger.info("GET /login")
   if (req.isAuthenticated()) {
     let user = req.user;
     console.log('user logeado');
@@ -99,32 +101,38 @@ router.get("/login", (req, res) => {
   }
 });
 
-router.post("/login", passport.authenticate('local-login',{failureRedirect: '/faillogin'}) ,(req, res) => {
+router.post("/login", passport.authenticate('local-login', { failureRedirect: '/faillogin' }), (req, res) => {
+  logger.info("POST /login")
   const user = req.user;
   res.redirect("/")
   
 })
 
 router.get("/register", (req, res) => {
+  logger.info("GET /register")
   res.render("register");
 })
 
-router.post("/register", passport.authenticate('local-register',{failureRedirect: '/failregister'}), (req, res) => {
+router.post("/register", passport.authenticate('local-register', { failureRedirect: '/failregister' }), (req, res) => {
+  logger.info("POST /register")
   let user = req.user;
   res.redirect("/");
 })
 
-router.get("/logout",  (req, res) => {
+router.get("/logout", (req, res) => {
+  logger.info("GET /logout")
   req.logout();
   res.redirect("/login");
 });
 
 router.get('/faillogin', (req, res) => {
+  logger.info("GET /faillogin")
   console.log("error login");
   res.render("error", {msg: "login", redirect: "/login"});
 });
 
 router.get('/failregister', (req, res) => {
+  logger.info("GET /failregister")
   console.log("error register");
   res.render("error", {msg: "signup", redirect: "/register"});
 });

@@ -11,7 +11,7 @@ const advancedOptions = { useNewUrlParser: true, useUnifiedTopology: true }
 
 export function useMiddlewares(app) {
   // static
-  // app.use(express.static("./public"))
+  app.use(express.static("./public"))
   app.use(express.urlencoded({extended: true}))
   app.use(express.json())
   app.use(session({
