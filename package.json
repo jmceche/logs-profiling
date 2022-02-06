@@ -5,13 +5,14 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "forever start server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "0x -o server.js",
+    "test": "node benchmark.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "autocannon": "^7.6.0",
     "axios": "^0.23.0",
     "bcrypt": "^5.0.1",
     "compression": "^1.7.4",
